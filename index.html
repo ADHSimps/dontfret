@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nice</title>
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(var(--columns), 1fr);
+        grid-template-rows: repeat(var(--rows), 1fr);
+        height: 100%;
+    }
+    .grid-item {
+        border: .25px solid black;
+        text-align: center;
+        padding: 10px;
+        position: relative;
+                  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+
+    }
+
+    .grid-item-border-row {
+        border: none !important;
+    }
+
+    .grid-item-first-column {
+      border-style: solid;
+      border-width: 0px 3px 0px 0px;
+    }
+
+    .filler-text {
+        position: absolute;
+        padding-left: 2px;
+        padding-right: 2px;
+        transform: translate(-50%, -150%);
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 10px;
+        z-index: 2;
+        background-color: white;
+
+    }
+
+    .filler-text-fill {
+        background-color: lightgrey;
+    }
+
+    .grid-item-fill {
+        background-color: lightgrey;
+    }
+
+</style>
+</head>
+<body>
+
+    <div class="grid-container"></div>
+    <select id="scaleSelect" onchange="setSelectedScale()"/>
+
+</select>
+
+<script>
+
+    const scales = [
+        {
+            steps: [2, 2, 1, 2, 2, 2, 1],
+            name: 'Major'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 3, 1],
+            name: 'Harmonic Minor'
+        },
+        {
+            steps: [2, 1, 2, 2, 2, 2, 1],
+            name: 'Melodic Minor (Ascending)'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 2, 2],
+            name: 'Melodic Minor (Descending)'
+        },
+        {
+            steps: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            name: 'Chromatic'
+        },
+        {
+            steps: [2, 2, 2, 2, 2, 2],
+            name: 'Whole Tone'
+        },
+        {
+            steps: [2, 2, 3, 2, 3],
+            name: 'Pentatonic Major'
+        },
+        {
+            steps: [3, 2, 2, 3, 2],
+            name: 'Pentatonic Minor'
+        },
+        {
+            steps: [3, 2, 1, 1, 3, 2],
+            name: 'Pentatonic Blues'
+        },
+        {
+            steps: [2, 3, 2, 3, 2],
+            name: 'Pentatonic Neutral'
+        },
+        {
+            steps: [1, 2, 1, 2, 1, 2, 1, 2],
+            name: 'Octatonic (H-W)'
+        },
+        {
+            steps: [2, 1, 2, 1, 2, 1, 2, 1],
+            name: 'Octatonic (W-H)'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 2, 1],
+            name: 'Ionian'
+        },
+        {
+            steps: [2, 1, 2, 2, 2, 1, 2],
+            name: 'Dorian'
+        },
+        {
+            steps: [1, 2, 2, 2, 1, 2, 2],
+            name: 'Phrygian'
+        },
+        {
+            steps: [2, 2, 2, 1, 2, 2, 1],
+            name: 'Lydian'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 1, 2],
+            name: 'Mixolydian'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 2, 2],
+            name: 'Aeolian'
+        },
+        {
+            steps: [1, 2, 2, 1, 2, 2, 2],
+            name: 'Locrian'
+        },
+        {
+            steps: [2, 1, 2, 1, 1, 1, 3, 1],
+            name: 'Algerian'
+        },
+        {
+            steps: [2, 1, 2, 1, 2, 1, 2, 1],
+            name: 'Arabian (a)'
+        },
+        {
+            steps: [2, 2, 1, 1, 2, 2, 2],
+            name: 'Arabian (b)'
+        },
+        {
+            steps: [3, 1, 2, 2, 3, 1],
+            name: 'Augmented'
+        },
+        {
+            steps: [2, 1, 2, 1, 2, 1, 2, 1],
+            name: 'Auxiliary Diminished'
+        },
+        {
+            steps: [2, 2, 2, 2, 2, 2],
+            name: 'Auxiliary Augmented'
+        },
+        {
+            steps: [1, 2, 1, 2, 1, 2, 1, 2],
+            name: 'Auxiliary Diminished Blues'
+        },
+        {
+            steps: [1, 2, 4, 1, 4],
+            name: 'Balinese'
+        },
+        {
+            steps: [3, 2, 1, 1, 3, 2],
+            name: 'Blues'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 3, 1],
+            name: 'Byzantine'
+        },
+        {
+            steps: [4, 2, 1, 4, 1],
+            name: 'Chinese'
+        },
+        {
+            steps: [2, 2, 3, 2, 3],
+            name: 'Chinese Mongolian'
+        },
+        {
+            steps: [2, 2, 3, 2, 3],
+            name: 'Diatonic'
+        },
+        {
+            steps: [2, 1, 2, 1, 2, 1, 2, 1],
+            name: 'Diminished'
+        },
+        {
+            steps: [1, 2, 1, 2, 1, 2, 1, 2],
+            name: 'Diminished, Half'
+        },
+        {
+            steps: [2, 1, 2, 1, 2, 1, 2, 1],
+            name: 'Diminished, Whole'
+        },
+        {
+            steps: [1, 2, 1, 2, 2, 2, 2],
+            name: 'Diminished Whole Tone'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 1, 2],
+            name: 'Dominant 7th'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 3, 1],
+            name: 'Double Harmonic'
+        },
+        {
+            steps: [2, 3, 2, 3, 2],
+            name: 'Egyptian'
+        },
+        {
+            steps: [1, 2, 1, 1, 1, 2, 2, 2],
+            name: 'Eight Tone Spanish'
+        },
+        {
+            steps: [1, 3, 2, 2, 2, 1, 1],
+            name: 'Enigmatic'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 2, 1],
+            name: 'Ethiopian (A raray)'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 2, 2],
+            name: 'Ethiopian (Geez & Ezel)'
+        },
+        {
+            steps: [1, 2, 2, 1, 2, 2, 2],
+            name: 'Half Diminished (Locrian)'
+        },
+        {
+            steps: [2, 1, 2, 1, 2, 2, 2],
+            name: 'Half Diminished #2 (Locrian #2)'
+        },
+        {
+            steps: [2, 1, 2, 2, 2, 2, 1],
+            name: 'Hawaiian'
+        },
+        {
+            steps: [2, 2, 1, 2, 1, 2, 2],
+            name: 'Hindu'
+        },
+        {
+            steps: [2, 2, 1, 2, 1, 2, 2],
+            name: 'Hindustan'
+        },
+        {
+            steps: [2, 1, 4, 1, 4],
+            name: 'Hirajoshi'
+        },
+        {
+            steps: [3, 1, 2, 1, 2, 1, 2],
+            name: 'Hungarian Major'
+        },
+        {
+            steps: [2, 1, 3, 1, 1, 3, 1],
+            name: 'Hungarian Gypsy'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 3, 1],
+            name: 'Hungarian Gypsy Persian'
+        },
+        {
+            steps: [2, 1, 3, 1, 1, 3, 1],
+            name: 'Hungarian Minor'
+        },
+        {
+            steps: [1, 4, 2, 1, 4],
+            name: 'Japanese (A)'
+        },
+        {
+            steps: [2, 3, 2, 1, 4],
+            name: 'Japanese (B)'
+        },
+        {
+            steps: [2, 2, 1, 1, 1, 2, 2, 1],
+            name: 'Japanese (Ichikosucho)'
+        },
+        {
+            steps: [2, 2, 1, 1, 1, 2, 1, 1, 1],
+            name: 'Japanese (Taishikicho)'
+        },
+        {
+            steps: [1, 2, 2, 2, 2, 1, 2],
+            name: 'Javaneese'
+        },
+        {
+            steps: [1, 1, 1, 2, 2, 2, 1, 2],
+            name: 'Jewish (Adonai Malakh)'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 2, 2],
+            name: 'Jewish (Ahaba Rabba)'
+        },
+        {
+            steps: [1, 2, 1, 2, 2, 2, 1, 1],
+            name: 'Jewish (Magen Abot)'
+        },
+        {
+            steps: [2, 1, 4, 2, 3],
+            name: 'Kumoi'
+        },
+        {
+            steps: [2, 2, 2, 2, 2, 1, 1],
+            name: 'Leading Whole Tone'
+        },
+        {
+            steps: [2, 2, 2, 2, 1, 2, 1],
+            name: 'Lydian Augmented'
+        },
+        {
+            steps: [2, 2, 2, 1, 1, 2, 2],
+            name: 'Lydian Minor'
+        },
+        {
+            steps: [2, 1, 3, 1, 2, 2, 1],
+            name: 'Lydian Diminished'
+        },
+        {
+            steps: [2, 2, 1, 1, 2, 2, 2],
+            name: 'Major Locrian'
+        },
+        {
+            steps: [1, 1, 3, 2, 1, 1, 3],
+            name: 'Mela Bhavapriya (44)'
+        },
+        {
+            steps: [1, 3, 1, 2, 2, 1, 2],
+            name: 'Mela Chakravakam (16)'
+        },
+        {
+            steps: [3, 1, 1, 2, 3, 1, 1],
+            name: 'Mela Chalanata (36)'
+        },
+        {
+            steps: [2, 2, 1, 2, 1, 2, 2],
+            name: 'Mela Charukesi (26)'
+        },
+        {
+            steps: [2, 2, 2, 1, 3, 1, 1],
+            name: 'Mela Chitrambari (66)'
+        },
+        {
+            steps: [2, 1, 3, 1, 2, 2, 1],
+            name: 'Mela Dharmavati (59)'
+        },
+        {
+            steps: [3, 1, 2, 1, 1, 3, 1],
+            name: 'Mela Dhatuvardhani (69)'
+        },
+        {
+            steps: [1, 3, 2, 1, 1, 1, 3],
+            name: 'Mela Dhavalambari (49)'
+        },
+        {
+            steps: [1, 2, 2, 2, 1, 3, 1],
+            name: 'Mela Dhenuka (9)'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 2, 1],
+            name: 'Mela Dhirasankarabharana (29)'
+        },
+        {
+            steps: [1, 2, 3, 1, 3, 1, 1],
+            name: 'Mela Divyamani (48)'
+        },
+        {
+            steps: [1, 3, 2, 1, 2, 2, 1],
+            name: 'Mela Gamanasrama (53)'
+        },
+        {
+            steps: [1, 1, 3, 2, 1, 3, 1],
+            name: 'Mela Ganamurti (3)'
+        },
+        {
+            steps: [3, 1, 1, 2, 1, 3, 1],
+            name: 'Mela Gangeyabhusani (33)'
+        },
+        {
+            steps: [2, 1, 2, 2, 2, 2, 1],
+            name: 'Mela Gaurimanohari (23)'
+        },
+        {
+            steps: [1, 2, 3, 1, 1, 1, 3],
+            name: 'Mela Gavambodhi (43)'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 1, 3],
+            name: 'Mela Gayakapriya (13)'
+        },
+        {
+            steps: [1, 2, 2, 2, 1, 2, 2],
+            name: 'Mela Hanumattodi (8)'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 1, 2],
+            name: 'Mela Harikambhoji (28)'
+        },
+        {
+            steps: [1, 3, 1, 2, 3, 1, 1],
+            name: 'Mela Hatakambari (18)'
+        },
+        {
+            steps: [2, 1, 3, 1, 2, 1, 2],
+            name: 'Mela Hemavati (58)'
+        },
+        {
+            steps: [1, 1, 4, 1, 1, 2, 2],
+            name: 'Mela Jalarnavam (38)'
+        },
+        {
+            steps: [1, 1, 4, 1, 2, 1, 2],
+            name: 'Mela Jhalavarali (39)'
+        },
+        {
+            steps: [2, 1, 2, 2, 3, -3, 2, 3],
+            name: 'Mela Jhankaradhvani (19)'
+        },
+        {
+            steps: [3, 1, 2, 1, 1, 2, 2],
+            name: 'Mela Jyotisvarupini (68)'
+        },
+        {
+            steps: [1, 3, 2, 1, 1, 3, 1],
+            name: 'Mela Kamavardhani (51)'
+        },
+        {
+            steps: [1, 1, 3, 2, 1, 1, 3],
+            name: 'Mela Kanakangi (1)'
+        },
+        {
+            steps: [2, 2, 2, 1, 1, 1, 3],
+            name: 'Mela Kantamani (61)'
+        },
+        {
+            steps: [2, 1, 2, 2, 2, 1, 2],
+            name: 'Mela Kharaharapriya (22)'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 3, 1],
+            name: 'Mela Kiravani (21)'
+        },
+        {
+            steps: [1, 2, 2, 2, 2, 2, 1],
+            name: 'Mela Kokilapriya (11)'
+        },
+        {
+            steps: [3, 1, 2, 1, 2, 2, 1],
+            name: 'Mela Kosalam (71)'
+        },
+        {
+            steps: [2, 2, 2, 1, 1, 3, 1],
+            name: 'Mela Latangi (63)'
+        },
+        {
+            steps: [1, 1, 3, 2, 2, 2, 1],
+            name: 'Mela Manavati (5)'
+        },
+        {
+            steps: [2, 2, 1, 2, 1, 1, 3],
+            name: 'Mela Mararanjani (25)'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 1, 3],
+            name: 'Mela Mayamalavagaula (15)'
+        },
+        {
+            steps: [2, 2, 2, 1, 2, 2, 1],
+            name: 'Mela Mechakalyani (65)'
+        },
+        {
+            steps: [2, 2, 1, 2, 3, 1, 1],
+            name: 'Mela Naganandini (30)'
+        },
+        {
+            steps: [1, 3, 2, 1, 1, 2, 2],
+            name: 'Mela Namanarayani (50)'
+        },
+        {
+            steps: [3, 1, 2, 1, 2, 1, 2],
+            name: 'Mela Nasikabhusani (70)'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 2, 2],
+            name: 'Mela Natabhairavi (20)'
+        },
+        {
+            steps: [1, 2, 2, 2, 2, 1, 2],
+            name: 'Mela Natakapriya (10)'
+        },
+        {
+            steps: [1, 1, 4, 1, 2, 1, 2],
+            name: 'Mela Navanitam (40)'
+        },
+        {
+            steps: [2, 1, 3, 1, 3, 1, 1],
+            name: 'Mela Nitimati (60)'
+        },
+        {
+            steps: [1, 1, 4, 1, 2, 2, 1],
+            name: 'Mela Pavani (41)'
+        },
+        {
+            steps: [3, 1, 1, 2, 1, 2, 2],
+            name: 'Mela Ragavardhani (32)'
+        },
+        {
+            steps: [1, 1, 4, 1, 3, 1, 1],
+            name: 'Mela Raghupriya (42)'
+        },
+        {
+            steps: [1, 3, 2, 1, 2, 1, 2],
+            name: 'Mela Ramapriya (52)'
+        },
+        {
+            steps: [3, 1, 2, 1, 3, 1, 1],
+            name: 'Mela Rasikapriya (72)'
+        },
+        {
+            steps: [1, 1, 3, 2, 1, 2, 2],
+            name: 'Mela Ratnangi (2)'
+        },
+        {
+            steps: [2, 2, 2, 1, 1, 2, 2],
+            name: 'Mela Risabhapriya (62)'
+        },
+        {
+            steps: [1, 2, 2, 2, 3, 1, 1],
+            name: 'Mela Rupavati (12)'
+        },
+        {
+            steps: [1, 2, 3, 1, 2, 1, 2],
+            name: 'Mela Sadvidhamargini (46)'
+        },
+        {
+            steps: [1, 1, 4, 1, 1, 1, 3],
+            name: 'Mela Salagam (37)'
+        },
+        {
+            steps: [2, 1, 3, 1, 1, 2, 2],
+            name: 'Mela Sanmukhapriya (56)'
+        },
+        {
+            steps: [2, 2, 1, 2, 1, 3, 1],
+            name: 'Mela Sarasangi (27)'
+        },
+        {
+            steps: [1, 2, 2, 2, 1, 1, 3],
+            name: 'Mela Senavati (7)'
+        },
+        {
+            steps: [2, 1, 3, 1, 1, 3, 1],
+            name: 'Mela Simhendramadhyama (57)'
+        },
+        {
+            steps: [1, 2, 3, 1, 1, 3, 1],
+            name: 'Mela Subhapantuvarali (45)'
+        },
+        {
+            steps: [3, 1, 2, 1, 1, 1, 3],
+            name: 'Mela Sucharitra (67)'
+        },
+        {
+            steps: [3, 1, 1, 2, 2, 2, 1],
+            name: 'Mela Sulini (35)'
+        },
+        {
+            steps: [1, 3, 1, 2, 2, 2, 1],
+            name: 'Mela Suryakantam (17)'
+        },
+        {
+            steps: [1, 1, 4, 1, 2, 2, 1],
+            name: 'Mela Suvarnangi (47)'
+        },
+        {
+            steps: [2, 1, 3, 1, 1, 1, 3],
+            name: 'Mela Syamalangi (55)'
+        },
+        {
+            steps: [1, 1, 3, 2, 3, 1, 1],
+            name: 'Mela Tanarupi (6)'
+        },
+        {
+            steps: [2, 2, 2, 1, 2, 1, 2],
+            name: 'Mela Vaschaspati (64)'
+        },
+        {
+            steps: [3, 1, 1, 2, 2, 1, 2],
+            name: 'Mela Vagadhisvari (34)'
+        },
+        {
+            steps: [3, 1, 1, 2, 1, 2, 2],
+            name: 'Mela Vakulabharanam (14)'
+        },
+        {
+            steps: [1, 1, 3, 2, 2, 1, 2],
+            name: 'Mela Vanaspati (4)'
+        },
+        {
+            steps: [2, 1, 2, 2, 3, 1, 1],
+            name: 'Mela Varunapriya (24)'
+        },
+        {
+            steps: [3, 1, 2, 1, 3, 1, 1],
+            name: 'Mela Visvambari (54)'
+        },
+        {
+            steps: [3, 1, 1, 2, 1, 1, 3],
+            name: 'Mela Yagapriya (31)'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 3, 1],
+            name: 'Mohammedan'
+        },
+        {
+            steps: [1, 2, 2, 2, 1, 3, 1],
+            name: 'Neopolitan'
+        },
+        {
+            steps: [1, 2, 2, 2, 2, 2, 1],
+            name: 'Neoploitan Major'
+        },
+        {
+            steps: [1, 2, 2, 2, 1, 2, 2],
+            name: 'Neopolitan Minor'
+        },
+        {
+            steps: [2, 1, 1, 2, 1, 1, 1, 2, 1],
+            name: 'Nine Tone Scale'
+        },
+        {
+            steps: [1, 3, 1, 1, 2, 2, 2],
+            name: 'Oriental (a)'
+        },
+        {
+            steps: [1, 3, 1, 1, 3, 1, 2],
+            name: 'Oriental (b)'
+        },
+        {
+            steps: [2, 2, 2, 1, 2, 1, 2],
+            name: 'Overtone'
+        },
+        {
+            steps: [2, 2, 2, 1, 2, 1, 2],
+            name: 'Overtone Dominant'
+        },
+        {
+            steps: [1, 2, 4, 1, 4],
+            name: 'Pelog'
+        },
+        {
+            steps: [1, 3, 1, 1, 2, 3, 1],
+            name: 'Persian'
+        },
+        {
+            steps: [2, 2, 2, 3, 1, 2],
+            name: 'Prometheus'
+        },
+        {
+            steps: [1, 3, 2, 3, 1, 2],
+            name: 'Prometheus Neopolitan'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 2, 2],
+            name: 'Pure Minor'
+        },
+        {
+            steps: [1, 3, 2, 1, 1, 3, 1],
+            name: 'Purvi Theta'
+        },
+        {
+            steps: [2, 1, 3, 1, 2, 1, 2],
+            name: 'Roumanian Minor'
+        },
+        {
+            steps: [1, 3, 1, 3, 1, 3],
+            name: 'Six Tone Symmetrical'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 2, 2],
+            name: 'Spanish Gypsy'
+        },
+        {
+            steps: [1, 2, 1, 2, 2, 2, 2],
+            name: 'Super Locrian'
+        },
+        {
+            steps: [2, 1, 2, 2, 1, 2, 2],
+            name: 'Theta, Asavari'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 2, 1],
+            name: 'Theta, Bilaval'
+        },
+        {
+            steps: [1, 3, 1, 2, 1, 3, 1],
+            name: 'Theta, Bhairav'
+        },
+        {
+            steps: [1, 2, 2, 2, 1, 2, 2],
+            name: 'Theta, Bhairavi'
+        },
+        {
+            steps: [2, 1, 2, 2, 2, 1, 2],
+            name: 'Theta, Kafi'
+        },
+        {
+            steps: [2, 2, 2, 1, 2, 2, 1],
+            name: 'Theta, Kalyan'
+        },
+        {
+            steps: [2, 2, 1, 2, 2, 1, 2],
+            name: 'Theta, Khamaj'
+        },
+        {
+            steps: [1, 3, 2, 1, 2, 2, 1],
+            name: 'Theta, Marva'
+        },
+        {
+            steps: [1, 2, 3, 1, 1, 3, 1],
+            name: 'Todi Theta'
+        }
+    ];
+
+    const chords = [
+        {
+            steps: [4, 3],
+            name: ' Major'
+        },
+        {
+            steps: [7],
+            name: '5'
+        },
+        {
+            steps: [4, 2],
+            name: '-5'
+        },
+        {
+            steps: [4, 3, 2],
+            name: '6'
+        },
+        {
+            steps: [4, 5, 5],
+            name: '6/9'
+        },
+        {
+            steps: [4, 3, 3],
+            name: '7'
+        },
+        {
+            steps: [4, 3, 7],
+            name: 'add9'
+        },
+        {
+            steps: [4, 3, 4],
+            name: 'maj7'
+        },
+        {
+            steps: [4, 4, 3],
+            name: 'maj7+5'
+        },
+        {
+            steps: [4, 7, 3],
+            name: 'maj9'
+        },
+        {
+            steps: [7, 4, 6],
+            name: 'maj11'
+        },
+        {
+            steps: [4, 7, 10],
+            name: 'maj13'
+        },
+        {
+            steps: [2, 2, 3],
+            name: '2'
+        },
+        {
+            steps: [3, 4],
+            name: 'm'
+        },
+        {
+            steps: [3, 4, 2],
+            name: 'm6'
+        },
+        {
+            steps: [3, 6, 5],
+            name: 'm6/9'
+        },
+        {
+            steps: [3, 4, 4],
+            name: 'mmaj7'
+        },
+        {
+            steps: [3, 8, 3],
+            name: 'mmaj9'
+        },
+        {
+            steps: [3, 11],
+            name: 'madd9'
+        },
+        {
+            steps: [3, 4, 3],
+            name: 'm7'
+        },
+        {
+            steps: [3, 7, 4],
+            name: 'm9'
+        },
+        {
+            steps: [3, 7, 7],
+            name: 'm11'
+        },
+        {
+            steps: [3, 7, 11],
+            name: 'm13'
+        },
+        {
+            steps: [3, 3],
+            name: 'm-5'
+        },
+        {
+            steps: [3, 3],
+            name: 'dim'
+        },
+        {
+            steps: [3, 3, 3],
+            name: 'dim7'
+        },
+        {
+            steps: [3, 3, 4],
+            name: 'm7-5'
+        },
+        {
+            steps: [4, 3, 3],
+            name: '7'
+        },
+        {
+            steps: [4, 6, 3],
+            name: '7-9'
+        },
+        {
+            steps: [4, 6, 5],
+            name: '7+9'
+        },
+        {
+            steps: [4, 2, 4],
+            name: '7-5'
+        },
+        {
+            steps: [4, 4, 2],
+            name: '7+5'
+        },
+        {
+            steps: [4, 5, 1],
+            name: '7/6'
+        },
+        {
+            steps: [4, 6, 4],
+            name: '9'
+        },
+        {
+            steps: [6, 4, 4],
+            name: '9-5'
+        },
+        {
+            steps: [8, 2, 4],
+            name: '9+5'
+        },
+        {
+            steps: [4, 3, 7],
+            name: 'add9'
+        },
+        {
+            steps: [9, 1, 4],
+            name: '9/6'
+        },
+        {
+            steps: [4, 6, 4, 4],
+            name: '9+11'
+        },
+        {
+            steps: [7, 3, 7],
+            name: '11'
+        },
+        {
+            steps: [10, 3, 4],
+            name: '11-9'
+        },
+        {
+            steps: [7, 3, 11],
+            name: '13'
+        },
+        {
+            steps: [10, 3, 8],
+            name: '13-9'
+        },
+        {
+            steps: [6, 4, 3, 8],
+            name: '13-9-5'
+        },
+        {
+            steps: [10, 3, 5, 3],
+            name: '13-9+11'
+        },
+        {
+            steps: [10, 8, 3],
+            name: '13+11'
+        },
+        {
+            steps: [4, 6, 11],
+            name: '7/13'
+        },
+        {
+            steps: [4, 4],
+            name: 'aug'
+        },
+        {
+            steps: [2, 5],
+            name: 'sus2'
+        },
+        {
+            steps: [5, 2],
+            name: 'sus4'
+        },
+        {
+            steps: [5, 2, 3],
+            name: '7sus4'
+        },
+        {
+            steps: [4, 6, 3],
+            name: '-9'
+        },
+        {
+            steps: [8, 2, 3],
+            name: '-9+5'
+        },
+        {
+            steps: [10, 3, 5],
+            name: '-9+11'
+        },
+        {
+            steps: [6, 4, 3],
+            name: '-9-5'
+        },
+        {
+            steps: [4, 4],
+            name: '+5'
+        },
+        {
+            steps: [4, 6, 5],
+            name: '+9'
+        },
+        {
+            steps: [10, 4, 4],
+            name: '+11'
+        }
+    ];
+
+    const allNotes = ["A", "As", "B", "C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs"];
+    const colorList = ["#FFD8B1","#E6E6FA","#B2F3E6","#F4CCCC","#ADD8E6","#FFF8DC","#C4C3D0","#98FB98","#FFCCCB","#87CEEB","#DCD0FF","#F5FFFA"];
+
+    function createGrid(tuning, columns) {
+                const gridContainer = document.querySelector('.grid-container');
+
+        while (gridContainer.firstChild) {
+            gridContainer.removeChild(gridContainer.firstChild);
+        }
+        tuning = tuning.reverse();
+        columns++;
+        const rows = tuning.length;
+        gridContainer.style.setProperty('--rows', rows);
+        gridContainer.style.setProperty('--columns', columns);
+        for (let i = -1; i < rows + 1; i++) {
+            let currentIndex = allNotes.indexOf(tuning[i]);
+            let isLastTwoRows = i >= rows - 1;
+            let isLastRow = i == rows;
+            let isFirstRow = i == -1;
+            for (let j = 0; j < columns; j++) {
+                let isFirstColumn = j == 0;
+                let nextNote = (currentIndex + j) % 12;
+                let noteText = allNotes[nextNote]?.replace("s", "#");
+                const gridItem = document.createElement('div');
+                const fillerText = document.createElement('div');
+                
+                gridItem.classList.add('grid-item');
+                if (isLastTwoRows || isFirstRow) gridItem.classList.add('grid-item-border-row');
+                if (isFirstColumn) gridItem.classList.add('grid-item-first-column');
+                gridItem.classList.add('note');
+
+                fillerText.classList.add('filler-text');
+                fillerText.classList.add(allNotes[nextNote]);
+
+                if (!isLastRow && !isFirstRow) fillerText.textContent = noteText;
+                
+                if ([0, 3, 5, 7, 9].includes(j % 12)) {
+                    if (!isFirstColumn) {
+                        fillerText.classList.add('filler-text-fill');
+                        gridItem.classList.add('grid-item-fill');
+                    }
+                    if (isLastRow) {
+                        fillerText.textContent = j;
+                    }
+                }
+
+                gridItem.appendChild(fillerText);
+                gridContainer.appendChild(gridItem);
+            }
+        }
+    }
+
+    function selectNotes(array) {        
+        for (let i = 0; i < array.length; i++) {
+            document.querySelectorAll("." + array[i]).forEach(function(element) {
+                element.style.backgroundColor = colorList[i]
+            });
+        }
+    }
+
+
+    function populateScaleOptions() {
+        const selectElement = document.getElementById('scaleSelect');
+        scales.forEach(scale => {
+            const option = document.createElement('option');
+            option.value = JSON.stringify(scale.steps); // Store steps as stringified JSON
+            option.text = scale.name;
+            selectElement.appendChild(option);
+        });
+    }
+
+    function populateNoteOptions() {
+        const selectElement = document.getElementById('noteSelect');
+        allNotes.forEach(note => {
+            const option = document.createElement('option');
+            option.value = note; // Store steps as stringified JSON
+            option.text = note;
+            selectElement.appendChild(option);
+        });
+    }
+
+    // Function to set the selected scale when an option is clicked
+    function setSelectedScale() {
+        const selectElement = document.getElementById('scaleSelect');
+        const selectedSteps = JSON.parse(selectElement.value); // Parse selected steps from string
+        createGrid(["B", "E", "A", "D", "G", "C", "F"], 24);
+        var selectedList = [];
+        var plus = allNotes.indexOf("C");
+        for (var i = 0; i < selectedSteps.length; i++) {
+            selectedList.push(allNotes[plus % 12]);
+            plus += selectedSteps[i];
+        }
+        selectNotes(selectedList);
+    }
+
+    // Call the function to populate the select list when the page loads
+    populateScaleOptions();
+
+</script>
+
+</body>
+</html>
+
+
+
